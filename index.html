@@ -624,9 +624,7 @@ async function saveState() {
 
 async function init() {
   state = await loadState();
-  renderHeader();
-  renderHeute();
-  renderTemplates();
+  init();
 }
 
 init();
