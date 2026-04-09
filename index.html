@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DailyTrackr</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0e11;
+    --surface: #17171c;
+    --surface2: #1f1f27;
+    --border: #2a2a35;
+    --accent: #c8f04a;
+    --accent2: #4af0c8;
+    --accent3: #f04a7a;
+    --text: #f0f0f0;
+    --muted: #7a7a90;
+    --radius: 12px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 32px 24px 0;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header-top {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.7rem;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .date-badge {
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 99px;
+    letter-spacing: 0.05em;
+  }
+  .streak-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    margin-bottom: 24px;
+  }
+  .streak-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .streak-count {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+  .streak-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    padding: 10px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 24px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* TODO ITEMS */
+  .todo-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+  .todo-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s, background 0.2s;
+    animation: slideIn 0.25s ease forwards;
+  }
+  .todo-item:hover { border-color: #3a3a48; }
+  .todo-item.done { background: var(--surface2); }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .todo-check {
+    width: 20px; height: 20px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: none;
+    cursor: pointer;
+    transition: all 0.18s;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .todo-check.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .todo-check.checked::after {
+    content: '';
+    width: 5px; height: 9px;
+    border-right: 2px solid #0e0e11;
+    border-bottom: 2px solid #0e0e11;
+    transform: rotate(45deg) translateY(-1px);
+    display: block;
+  }
+  .todo-text {
+    flex: 1;
+    font-size: 0.88rem;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+  .todo-item.done .todo-text {
+    color: var(--muted);
+    text-decoration: line-through;
+  }
+  .todo-tag {
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .todo-tag.routine { background: rgba(200,240,74,0.1); color: var(--accent); }
+  .todo-tag.custom  { background: rgba(74,240,200,0.1); color: var(--accent2); }
+  .todo-delete {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .todo-delete:hover { color: var(--accent3); background: rgba(240,74,122,0.08); }
+
+  /* ADD INPUT */
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .input-field {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: var(--muted); }
+  .add-btn {
+    background: var(--accent);
+    color: #0e0e11;
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .add-btn:hover { background: #d8ff5a; transform: translateY(-1px); }
+  .add-btn:active { transform: translateY(0); }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-info { flex: 1; }
+  .progress-nums {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .progress-nums span { color: var(--accent); }
+  .progress-bar-outer {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-inner {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 99px;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1);
+  }
+  .progress-pct {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--accent);
+  }
+
+  /* FEEDBACK SECTION */
+  .feedback-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-top: 4px;
+    transition: border-color 0.2s;
+  }
+  .feedback-box:focus-within { border-color: var(--accent2); }
+  .feedback-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .feedback-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent2);
+  }
+  .feedback-saved {
+    font-size: 0.62rem;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .feedback-saved.show { opacity: 1; }
+  .feedback-textarea {
+    width: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    resize: vertical;
+    min-height: 90px;
+    caret-color: var(--accent2);
+  }
+  .feedback-textarea::placeholder { color: var(--muted); }
+  .feedback-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  .feedback-save-btn {
+    background: var(--accent2);
+    color: #0e0e11;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.75rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .feedback-save-btn:hover { background: #5affd8; transform: translateY(-1px); }
+  .feedback-readonly {
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    font-style: italic;
+  }
+  .feedback-empty {
+    color: #3a3a48;
+    font-size: 0.78rem;
+    font-style: italic;
+  }
+
+  /* ROUTINES TAB */
+  .routine-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.2s;
+    animation: slideIn 0.25s ease forwards;
+  }
+  .routine-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .routine-text { flex: 1; font-size: 0.88rem; }
+
+  /* HISTORY */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+  .history-day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .history-day:hover { border-color: #3a3a48; }
+  .history-day-header {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .history-date-block {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+  }
+  .history-date {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .history-weekday {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .history-stats { flex: 1; }
+  .history-bar-outer {
+    height: 4px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .history-bar-inner {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+  }
+  .history-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .history-pct-text {
+    font-size: 0.65rem;
+    color: var(--muted);
+  }
+  .history-badge {
+    font-size: 0.62rem;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  .history-badge.perfect { background: rgba(200,240,74,0.15); color: var(--accent); }
+  .history-badge.partial { background: rgba(74,240,200,0.1); color: var(--accent2); }
+  .history-badge.missed  { background: rgba(240,74,122,0.1); color: var(--accent3); }
+  .history-toggle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform 0.2s;
+  }
+  .history-day.open .history-toggle { transform: rotate(180deg); }
+  .history-day-body {
+    display: none;
+    padding: 0 18px 16px;
+    border-top: 1px solid var(--border);
+  }
+  .history-day.open .history-day-body { display: block; }
+  .history-todo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.82rem;
+  }
+  .history-todo-row:last-child { border-bottom: none; }
+  .history-check {
+    width: 14px; height: 14px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .history-check.done { background: var(--accent); }
+  .history-check.open { border: 2px solid var(--border); background: none; }
+  .history-todo-text.done { color: var(--muted); text-decoration: line-through; }
+  .history-todo-text.open { color: var(--text); }
+
+  /* Feedback in history */
+  .history-feedback-block {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .history-feedback-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent2);
+    margin-bottom: 6px;
+  }
+  .history-feedback-text {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+    font-style: italic;
+    white-space: pre-wrap;
+  }
+
+  /* EMPTY */
+  .empty-msg {
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 32px 0;
+    font-style: italic;
+  }
+
+  /* SCROLL FADE-IN */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .main { animation: fadeUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">Daily<span>Trackr</span></div>
+    <div class="date-badge" id="headerDate"></div>
+  </div>
+  <div class="streak-bar">
+    <div class="streak-dot"></div>
+    <div class="streak-label">Streak</div>
+    <div class="streak-count" id="streakCount">0 Tage</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('heute')">Heute</button>
+  <button class="tab-btn" onclick="switchTab('routinen')">Routinen</button>
+  <button class="tab-btn" onclick="switchTab('verlauf')">Verlauf</button>
+</div>
+
+<div class="main">
+
+  <!-- HEUTE -->
+  <div id="tab-heute" class="tab-panel active">
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-info">
+        <div class="progress-nums"><span id="doneCnt">0</span> / <span id="totalCnt">0</span> erledigt</div>
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" id="progressBar" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="progress-pct" id="progressPct">0%</div>
+    </div>
+
+    <div class="section-label">Tagliche Routinen</div>
+    <div class="todo-list" id="routineList"></div>
+
+    <div class="section-label">Heutige Todos</div>
+    <div class="add-row">
+      <input id="todoInput" class="input-field" placeholder="Neues Todo..." onkeydown="if(event.key==='Enter') addTodo()"/>
+      <button class="add-btn" onclick="addTodo()">+ Add</button>
+    </div>
+    <div class="todo-list" id="customList"></div>
+
+    <!-- TAGESFEEDBACK -->
+    <div class="section-label" style="margin-top:8px;">Tagesfeedback</div>
+    <div class="feedback-box" id="feedbackBox">
+      <div class="feedback-header">
+        <div class="feedback-title">Wie war dein Tag?</div>
+        <div class="feedback-saved" id="feedbackSaved">Gespeichert</div>
+      </div>
+      <textarea id="feedbackTextarea" class="feedback-textarea" placeholder="Schreib hier dein Tagesfeedback..."></textarea>
+      <div class="feedback-actions">
+        <button class="feedback-save-btn" onclick="saveFeedback()">Speichern</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROUTINEN -->
+  <div id="tab-routinen" class="tab-panel">
+    <div class="section-label">Wiederkehrende Todos verwalten</div>
+    <div class="add-row">
+      <input id="routineInput" class="input-field" placeholder="Neue Routine..." onkeydown="if(event.key==='Enter') addTemplate()"/>
+      <button class="add-btn" onclick="addTemplate()">+ Add</button>
+    </div>
+    <div class="todo-list" id="templateList"></div>
+  </div>
+
+  <!-- VERLAUF -->
+  <div id="tab-verlauf" class="tab-panel">
+    <div class="section-label">Kompletter Verlauf</div>
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+  /* =========================================================
+     STATE & STORAGE
+  ========================================================= */
+  const STORE_KEY = 'dailytrackr_v4';
+
+
+  async function loadState() {
+  const res = await fetch('/api/state');
+  return await res.json();
+}
+
+async function saveState() {
+  await fetch('/api/state', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(state)
+  });
+}
+
+
+  let state = { templates: [], days: {} };
+
+async function init() {
+  state = await loadState();
+  renderHeader();
+  renderHeute();
+  renderTemplates();
+}
+
+init();
+
+  /* =========================================================
+     DATE HELPERS
+  ========================================================= */
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function formatDate(key) {
+    const [y,m,d] = key.split('-');
+    return `${d}.${m}.${y}`;
+  }
+
+  function getWeekday(key) {
+    const days = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+    return days[new Date(key).getDay()];
+  }
+
+  /* =========================================================
+     ENSURE TODAY EXISTS
+  ========================================================= */
+function ensureToday() {
+  const key = todayKey();
+
+  if (!state.days[key]) {
+    state.days[key] = { routines: [], todos: [], feedback: '' };
+  }
+
+  const day = state.days[key];
+
+  state.templates.forEach(t => {
+    if (!day.routines.find(r => r.templateId === t.id)) {
+      day.routines.push({ id: uid(), templateId: t.id, text: t.text, done: false });
+    }
+  });
+
+  day.routines = day.routines.filter(r => state.templates.find(t => t.id === r.templateId));
+
+  if (!day.feedback) day.feedback = '';
+
+  return day; // ✅ KEIN saveState hier!
+}
+
+  function uid() { return Math.random().toString(36).slice(2,10); }
+
+  /* =========================================================
+     HEADER & STREAK
+  ========================================================= */
+  function renderHeader() {
+    const d = new Date();
+    const days = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+    const months = ['Jan','Feb','Mar','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+    document.getElementById('headerDate').textContent =
+      `${days[d.getDay()]}, ${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
+
+    // Streak calculation
+    let streak = 0;
+    const sorted = Object.keys(state.days).sort().reverse();
+    const tk = todayKey();
+    for (let k of sorted) {
+      if (k === tk) { streak++; continue; }
+      const day = state.days[k];
+      const all = [...(day.routines||[]), ...(day.todos||[])];
+      if (all.length > 0 && all.every(t => t.done)) streak++;
+      else break;
+    }
+    document.getElementById('streakCount').textContent = `${streak} ${streak === 1 ? 'Tag' : 'Tage'}`;
+  }
+
+  /* =========================================================
+     HEUTE RENDER
+  ========================================================= */
+  function renderHeute() {
+    const day = ensureToday();
+    renderRoutines(day);
+    renderCustomTodos(day);
+    renderProgress(day);
+    renderFeedback(day);
+  }
+
+  function renderRoutines(day) {
+    const el = document.getElementById('routineList');
+    el.innerHTML = '';
+    if (!day.routines.length) {
+      el.innerHTML = '<div class="empty-msg">Noch keine Routinen. Fuege sie im Tab "Routinen" hinzu.</div>';
+      return;
+    }
+    day.routines.forEach(r => {
+      el.appendChild(buildTodoEl(r, 'routine', () => {
+        r.done = !r.done;
+        saveState();
+        renderHeute();
+      }, null));
+    });
+  }
+
+  function renderCustomTodos(day) {
+    const el = document.getElementById('customList');
+    el.innerHTML = '';
+    if (!day.todos.length) {
+      el.innerHTML = '<div class="empty-msg">Noch keine Todos fuer heute.</div>';
+      return;
+    }
+    day.todos.forEach(t => {
+      el.appendChild(buildTodoEl(t, 'custom', () => {
+        t.done = !t.done;
+        saveState();
+        renderHeute();
+      }, () => {
+        day.todos = day.todos.filter(x => x.id !== t.id);
+        saveState();
+        renderHeute();
+      }));
+    });
+  }
+
+  function buildTodoEl(item, type, onCheck, onDelete) {
+    const div = document.createElement('div');
+    div.className = 'todo-item' + (item.done ? ' done' : '');
+
+    const check = document.createElement('div');
+    check.className = 'todo-check' + (item.done ? ' checked' : '');
+    check.onclick = onCheck;
+
+    const text = document.createElement('div');
+    text.className = 'todo-text';
+    text.textContent = item.text;
+
+    const tag = document.createElement('span');
+    tag.className = `todo-tag ${type}`;
+    tag.textContent = type === 'routine' ? 'Routine' : 'Heute';
+
+    div.appendChild(check);
+    div.appendChild(text);
+    div.appendChild(tag);
+
+    if (onDelete) {
+      const del = document.createElement('button');
+      del.className = 'todo-delete';
+      del.textContent = 'x';
+      del.onclick = onDelete;
+      div.appendChild(del);
+    }
+    return div;
+  }
+
+  function renderProgress(day) {
+    const all = [...(day.routines||[]), ...(day.todos||[])];
+    const done = all.filter(t => t.done).length;
+    const total = all.length;
+    const pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById('doneCnt').textContent = done;
+    document.getElementById('totalCnt').textContent = total;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+  }
+
+  /* =========================================================
+     FEEDBACK
+  ========================================================= */
+  function renderFeedback(day) {
+    const textarea = document.getElementById('feedbackTextarea');
+    textarea.value = day.feedback || '';
+  }
+
+  function saveFeedback() {
+    const day = ensureToday();
+    const val = document.getElementById('feedbackTextarea').value.trim();
+    day.feedback = val;
+    saveState();
+
+    const saved = document.getElementById('feedbackSaved');
+    saved.classList.add('show');
+    setTimeout(() => saved.classList.remove('show'), 2000);
+
+    renderVerlauf();
+  }
+
+  /* =========================================================
+     ADD TODO
+  ========================================================= */
+  function addTodo() {
+    const input = document.getElementById('todoInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const day = ensureToday();
+    day.todos.push({ id: uid(), text, done: false });
+    saveState();
+    input.value = '';
+    renderHeute();
+  }
+
+  /* =========================================================
+     ROUTINEN / TEMPLATES
+  ========================================================= */
+  function renderTemplates() {
+    const el = document.getElementById('templateList');
+    el.innerHTML = '';
+    if (!state.templates.length) {
+      el.innerHTML = '<div class="empty-msg">Noch keine Routinen angelegt.</div>';
+      return;
+    }
+    state.templates.forEach(t => {
+      const div = document.createElement('div');
+      div.className = 'routine-item';
+      div.style.gap = '12px';
+      div.style.marginBottom = '0';
+
+      const dot = document.createElement('div');
+      dot.className = 'routine-dot';
+
+      const txt = document.createElement('div');
+      txt.className = 'routine-text';
+      txt.textContent = t.text;
+
+      const del = document.createElement('button');
+      del.className = 'todo-delete';
+      del.textContent = 'x';
+      del.onclick = () => deleteTemplate(t.id);
+
+      div.appendChild(dot);
+      div.appendChild(txt);
+      div.appendChild(del);
+      el.appendChild(div);
+    });
+  }
+
+  function addTemplate() {
+    const input = document.getElementById('routineInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const t = { id: uid(), text };
+    state.templates.push(t);
+
+    // Immediately add to today
+    const day = ensureToday();
+    if (!day.routines.find(r => r.templateId === t.id)) {
+      day.routines.push({ id: uid(), templateId: t.id, text: t.text, done: false });
+    }
+
+    saveState();
+    input.value = '';
+    renderTemplates();
+    renderHeute();
+  }
+
+  function deleteTemplate(id) {
+    state.templates = state.templates.filter(t => t.id !== id);
+    // Remove from today immediately
+    const key = todayKey();
+    if (state.days[key]) {
+      state.days[key].routines = state.days[key].routines.filter(r => r.templateId !== id);
+    }
+    saveState();
+    renderTemplates();
+    renderHeute();
+  }
+
+  /* =========================================================
+     VERLAUF
+  ========================================================= */
+  function renderVerlauf() {
+    const el = document.getElementById('historyList');
+    el.innerHTML = '';
+    const keys = Object.keys(state.days).sort().reverse();
+
+    if (!keys.length) {
+      el.innerHTML = '<div class="empty-msg">Noch kein Verlauf vorhanden.</div>';
+      return;
+    }
+
+    keys.forEach(key => {
+      const day = state.days[key];
+      const all = [...(day.routines||[]), ...(day.todos||[])];
+      const done = all.filter(t => t.done).length;
+      const total = all.length;
+      const pct = total ? Math.round((done/total)*100) : 0;
+      const isToday = key === todayKey();
+
+      let barColor = pct === 100 ? 'var(--accent)' : pct >= 50 ? 'var(--accent2)' : 'var(--accent3)';
+      let badge = pct === 100 ? ['perfect','Perfekt'] : pct > 0 ? ['partial',`${pct}%`] : ['missed','Nichts'];
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'history-day';
+
+      // HEADER
+      const header = document.createElement('div');
+      header.className = 'history-day-header';
+      header.onclick = () => {
+        wrapper.classList.toggle('open');
+      };
+
+      const dateBlock = document.createElement('div');
+      dateBlock.className = 'history-date-block';
+      dateBlock.innerHTML = `
+        <div class="history-date">${formatDate(key)}${isToday ? ' <span style="color:var(--accent);font-size:0.65rem;">HEUTE</span>' : ''}</div>
+        <div class="history-weekday">${getWeekday(key)}</div>
+      `;
+
+      const stats = document.createElement('div');
+      stats.className = 'history-stats';
+      stats.innerHTML = `
+        <div class="history-bar-outer">
+          <div class="history-bar-inner" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        <div class="history-stat-row">
+          <div class="history-pct-text">${done}/${total} erledigt</div>
+          <span class="history-badge ${badge[0]}">${badge[1]}</span>
+        </div>
+      `;
+
+      const toggle = document.createElement('div');
+      toggle.className = 'history-toggle';
+      toggle.textContent = 'v';
+
+      header.appendChild(dateBlock);
+      header.appendChild(stats);
+      header.appendChild(toggle);
+
+      // BODY
+      const body = document.createElement('div');
+      body.className = 'history-day-body';
+
+      // Todos
+      if (all.length) {
+        all.forEach(t => {
+          const row = document.createElement('div');
+          row.className = 'history-todo-row';
+          const chk = document.createElement('div');
+          chk.className = `history-check ${t.done ? 'done' : 'open'}`;
+          const txt = document.createElement('div');
+          txt.className = `history-todo-text ${t.done ? 'done' : 'open'}`;
+          txt.textContent = t.text;
+          const tag = document.createElement('span');
+          tag.style.cssText = 'font-size:0.6rem;color:var(--muted);margin-left:auto;';
+          tag.textContent = t.templateId ? 'Routine' : 'Einmalig';
+          row.appendChild(chk);
+          row.appendChild(txt);
+          row.appendChild(tag);
+          body.appendChild(row);
+        });
+      } else {
+        const empty = document.createElement('div');
+        empty.style.cssText = 'font-size:0.78rem;color:var(--muted);padding:12px 0;font-style:italic;';
+        empty.textContent = 'Keine Todos an diesem Tag.';
+        body.appendChild(empty);
+      }
+
+      // Feedback block
+      const fbBlock = document.createElement('div');
+      fbBlock.className = 'history-feedback-block';
+      const fbLabel = document.createElement('div');
+      fbLabel.className = 'history-feedback-label';
+      fbLabel.textContent = 'Tagesfeedback';
+      fbBlock.appendChild(fbLabel);
+
+      if (day.feedback && day.feedback.trim()) {
+        const fbText = document.createElement('div');
+        fbText.className = 'history-feedback-text';
+        fbText.textContent = day.feedback;
+        fbBlock.appendChild(fbText);
+      } else {
+        const fbEmpty = document.createElement('div');
+        fbEmpty.className = 'feedback-empty';
+        fbEmpty.textContent = 'Kein Feedback hinterlassen.';
+        fbBlock.appendChild(fbEmpty);
+      }
+
+      body.appendChild(fbBlock);
+
+      wrapper.appendChild(header);
+      wrapper.appendChild(body);
+      el.appendChild(wrapper);
+    });
+  }
+
+  /* =========================================================
+     TABS
+  ========================================================= */
+  function switchTab(name) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    event.target.classList.add('active');
+    if (name === 'verlauf') renderVerlauf();
+    if (name === 'routinen') renderTemplates();
+  }
+
+  /* =========================================================
+     INIT
+  ========================================================= */
+  renderHeader();
+  renderHeute();
+  renderTemplates();
+</script>
+</body>
+</html>
