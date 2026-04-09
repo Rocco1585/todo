@@ -605,12 +605,12 @@
 
 
   async function loadState() {
-  const res = await fetch('/api/state');
+  const res = await fetch('https://todo-o4v0.onrender.com/api/state')
   return await res.json();
 }
 
 async function saveState() {
-  await fetch('/api/state', {
+  await fetch('https://todo-o4v0.onrender.com/api/state', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
